@@ -1,12 +1,17 @@
 from api import app, db, request
 from api.models.author import AuthorModel
+from api.schemas.author import authors_schema
 
 
+# Сериализация:
+#      MA       FLASK
+# obj ---> dict ---> json
 @app.route('/authors', methods=["GET"])
 def get_authors():
     authors = AuthorModel.query.all()
-    authors_dict = [author.to_dict() for author in authors]
-    return authors_dict, 200
+    return authors_schema.dump(authors)
+    #authors_dict = [author.to_dict() for author in authors]
+    #return authors_dict, 200
 
 
 @app.route('/authors/<int:author_id>', methods=["GET"])
