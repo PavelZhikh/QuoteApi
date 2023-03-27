@@ -1,7 +1,7 @@
 from api import app, db, request
 from api.models.author import AuthorModel
-from api.schemas.author import authors_schema
-
+from api.schemas.author import author_schema, authors_schema
+from marshmallow import ValidationError
 
 # Сериализация:
 #      MA       FLASK
@@ -10,8 +10,6 @@ from api.schemas.author import authors_schema
 def get_authors():
     authors = AuthorModel.query.all()
     return authors_schema.dump(authors)
-    #authors_dict = [author.to_dict() for author in authors]
-    #return authors_dict, 200
 
 
 @app.route('/authors/<int:author_id>', methods=["GET"])
@@ -20,16 +18,21 @@ def get_author_by_id(author_id):
     if not author:
         return f"Author id={author_id} not found", 404
 
-    return author.to_dict(), 200
+    return author_schema.dump(author), 200
 
 
 @app.route('/authors', methods=["POST"])
 def create_author():
-    author_data = request.json
-    author = AuthorModel(author_data["name"])
+    json_data = request.json
+    try:
+        author_data = author_schema.load(json_data)
+    except ValidationError as err:
+        return err.messages, 422
+
+    author = AuthorModel(**author_data)
     db.session.add(author)
     db.session.commit()
-    return author.to_dict(), 201
+    return author_schema.dump(author), 201
 
 
 @app.route('/authors/<int:author_id>', methods=["PUT"])
@@ -39,9 +42,8 @@ def edit_author(author_id):
     if author is None:
         return {"Error": f"Author id={author_id} not found"}, 404
     author.name = author_data["name"]
-    #db.session.add(author)
     db.session.commit()
-    return author.to_dict(), 200
+    return author_schema.dump(author), 200
 
 
 @app.route('/authors/<int:author_id>', methods=["PUT"])
