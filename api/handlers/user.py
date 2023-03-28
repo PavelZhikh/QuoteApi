@@ -1,6 +1,6 @@
 from api import app, db, request
 from api.models.user import UserModel
-from api.schemas.user import user_schema, users_schema
+from api.schemas.user import user_schema, users_schema, user_create_schema
 from marshmallow import ValidationError
 
 
@@ -20,10 +20,10 @@ def get_users():
 @app.route('/users', methods=["POST"])
 def create_user():
     user_data = request.json
-    # try:
-    #     user_data = user_schema.load(json_data)
-    # except ValidationError as err:
-    #     return err.messages, 422
+    try:
+        user_data = user_create_schema.load(user_data)
+    except ValidationError as err:
+        return err.messages, 422
 
     user = UserModel(**user_data)
     db.session.add(user)
