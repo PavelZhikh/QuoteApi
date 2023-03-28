@@ -2,6 +2,8 @@ from api import app, db, request
 from api.models.author import AuthorModel
 from api.schemas.author import author_schema, authors_schema
 from marshmallow import ValidationError
+from api import multi_auth
+
 
 # Сериализация:
 #      MA       FLASK
@@ -22,6 +24,7 @@ def get_author_by_id(author_id):
 
 
 @app.route('/authors', methods=["POST"])
+@multi_auth.login_required
 def create_author():
     json_data = request.json
     try:

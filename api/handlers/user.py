@@ -2,7 +2,7 @@ from api import app, db, request
 from api.models.user import UserModel
 from api.schemas.user import user_schema, users_schema, user_create_schema
 from marshmallow import ValidationError
-
+from api import multi_auth
 
 # url: /users/<int:user_id>
 @app.route('/users/<int:user_id>')
@@ -18,6 +18,7 @@ def get_users():
 
 # url: /users
 @app.route('/users', methods=["POST"])
+@multi_auth.login_required
 def create_user():
     user_data = request.json
     try:

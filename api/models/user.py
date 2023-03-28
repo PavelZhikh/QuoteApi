@@ -1,5 +1,8 @@
+from api import db, Config
+from itsdangerous import URLSafeSerializer
+from itsdangerous import BadSignature
 from passlib.apps import custom_app_context as pwd_context
-from api import db
+
 
 class UserModel(db.Model):
    id = db.Column(db.Integer, primary_key=True)
@@ -15,3 +18,17 @@ class UserModel(db.Model):
 
    def verify_password(self, password):
        return pwd_context.verify(password, self.password_hash)
+
+   def generate_auth_token(self):
+       s = URLSafeSerializer(Config.SECRET_KEY)
+       return s.dumps({'id': self.id})
+
+   @staticmethod
+   def verify_auth_token(token):
+       s = URLSafeSerializer(Config.SECRET_KEY)
+       try:
+           data = s.loads(token)
+       except BadSignature:
+           return None  # invalid token
+       user = UserModel.query.get(data['id'])
+       return user
