@@ -3,6 +3,7 @@ from api.models.author import AuthorModel
 from api.schemas.author import author_schema, authors_schema
 from marshmallow import ValidationError
 from api import multi_auth
+from utilities.tools import get_object_or_404
 
 
 # Сериализация:
@@ -16,11 +17,11 @@ def get_authors():
 
 @app.route('/authors/<int:author_id>', methods=["GET"])
 def get_author_by_id(author_id):
-    author = AuthorModel.query.get(author_id)
-    if not author:
-        return f"Author id={author_id} not found", 404
-
-    return author_schema.dump(author), 200
+    # author = AuthorModel.query.get(author_id)
+    # if not author:
+    #     return f"Author id={author_id} not found", 404
+    author = get_object_or_404(AuthorModel, author_id)
+    return author_schema.dump(author)
 
 
 @app.route('/authors', methods=["POST"])
@@ -41,9 +42,7 @@ def create_author():
 @app.route('/authors/<int:author_id>', methods=["PUT"])
 def edit_author(author_id):
     author_data = request.json
-    author = AuthorModel.query.get(author_id)
-    if author is None:
-        return {"Error": f"Author id={author_id} not found"}, 404
+    author = get_object_or_404(AuthorModel, author_id)
     author.name = author_data["name"]
     db.session.commit()
     return author_schema.dump(author), 200

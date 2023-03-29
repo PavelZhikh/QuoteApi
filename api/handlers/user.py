@@ -3,11 +3,14 @@ from api.models.user import UserModel
 from api.schemas.user import user_schema, users_schema, user_create_schema
 from marshmallow import ValidationError
 from api import multi_auth
+from utilities.tools import get_object_or_404
+
 
 # url: /users/<int:user_id>
 @app.route('/users/<int:user_id>')
 def get_user_by_id(user_id):
-    user = UserModel.query.get(user_id)
+    user = get_object_or_404(UserModel, user_id)
+    # user = UserModel.query.get(user_id)
     return user_schema.dump(user)
 
 # url: /users
